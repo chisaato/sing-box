@@ -147,23 +147,28 @@ func (n *Inbound) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 		rejectHTTP(writer, http.StatusBadRequest)
 		n.badRequest(ctx, request, E.New("not CONNECT request"))
 		return
-	} else if request.Header.Get("Padding") == "" {
-		rejectHTTP(writer, http.StatusBadRequest)
-		n.badRequest(ctx, request, E.New("missing naive padding"))
-		return
 	}
-	userName, password, authOk := sHttp.ParseBasicAuth(request.Header.Get("Proxy-Authorization"))
-	if authOk {
-		authOk = n.authenticator.Verify(userName, password)
+	needPadding := request.Header.Get("Padding") != ""
+	var userName string
+	if n.authenticator != nil {
+		var password string
+		var authOk bool
+		userName, password, authOk = sHttp.ParseBasicAuth(request.Header.Get("Proxy-Authorization"))
+		if authOk {
+			authOk = n.authenticator.Verify(userName, password)
+		}
+		if !authOk {
+			rejectHTTP(writer, http.StatusProxyAuthRequired)
+			n.badRequest(ctx, request, E.New("authorization failed"))
+			return
+		}
 	}
-	if !authOk {
-		rejectHTTP(writer, http.StatusProxyAuthRequired)
-		n.badRequest(ctx, request, E.New("authorization failed"))
-		return
+	if needPadding {
+		writer.Header().Set("Padding", generateNaivePaddingHeader())
 	}
-	writer.Header().Set("Padding", generateNaivePaddingHeader())
 	writer.WriteHeader(http.StatusOK)
-	writer.(http.Flusher).Flush()
+	flusher := writer.(http.Flusher)
+	flusher.Flush()
 
 	hostPort := request.URL.Host
 	if hostPort == "" {
@@ -178,9 +183,18 @@ func (n *Inbound) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 			n.badRequest(ctx, request, E.New("hijack failed"))
 			return
 		}
-		n.newConnection(ctx, false, &naiveH1Conn{Conn: conn}, userName, source, destination)
+		if needPadding {
+			conn = &naiveH1Conn{Conn: conn}
+		}
+		n.newConnection(ctx, false, conn, userName, source, destination)
 	} else {
-		n.newConnection(ctx, true, &naiveH2Conn{reader: request.Body, writer: writer, flusher: writer.(http.Flusher)}, userName, source, destination)
+		var conn net.Conn
+		if needPadding {
+			conn = &naiveH2Conn{reader: request.Body, writer: writer, flusher: flusher}
+		} else {
+			conn = &v2rayhttp.ServerHTTPConn{HTTP2Conn: v2rayhttp.NewHTTPConn(request.Body, writer), Flusher: flusher}
+		}
+		n.newConnection(ctx, true, conn, userName, source, destination)
 	}
 }
 
