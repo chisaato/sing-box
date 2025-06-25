@@ -18,6 +18,17 @@ import (
 
 const kFirstPaddings = 8
 
+type fastCloseConn struct {
+	net.Conn
+}
+
+func (c *fastCloseConn) Close() error {
+	if tcpConn, isTCPConn := c.Conn.(*net.TCPConn); isTCPConn {
+		tcpConn.SetLinger(0)
+	}
+	return c.Conn.Close()
+}
+
 type naiveH1Conn struct {
 	net.Conn
 	readPadding      int
