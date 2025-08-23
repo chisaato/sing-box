@@ -2,6 +2,8 @@ name: Build Cores
 
 on:
   push:
+  # 手工触发
+  workflow_dispatch: {}
 
 jobs:
   go:
@@ -46,17 +48,41 @@ jobs:
       matrix:
         jobs:
           # android
-          - { goos: android, goarch: 386, goarm: 7, ndk: i686-linux-android34, output: 386 }
-          - { goos: android, goarch: arm, goarm: 7, ndk: armv7a-linux-androideabi34, output: armeabi-v7a }
-          - { goos: android, goarch: arm64, goarm: 7, ndk: aarch64-linux-android34, output: arm64-v8a }
-          - { goos: android, goarch: amd64, goarm: 7, ndk: x86_64-linux-android34, output: amd64 }
-          
+          # - {
+          #     goos: android,
+          #     goarch: 386,
+          #     goarm: 7,
+          #     ndk: i686-linux-android34,
+          #     output: 386,
+          #   }
+          # - {
+          #     goos: android,
+          #     goarch: arm,
+          #     goarm: 7,
+          #     ndk: armv7a-linux-androideabi34,
+          #     output: armeabi-v7a,
+          #   }
+          - {
+              goos: android,
+              goarch: arm64,
+              goarm: 7,
+              ndk: aarch64-linux-android34,
+              output: arm64-v8a,
+            }
+          - {
+              goos: android,
+              goarch: amd64,
+              goarm: 7,
+              ndk: x86_64-linux-android34,
+              output: amd64,
+            }
+
           # darwin
           - { goos: darwin, goarch: arm64, output: arm64 }
           - { goos: darwin, goarch: amd64, goamd64: v1, output: amd64 }
           - { goos: darwin, goarch: amd64, goamd64: v3, output: amd64v3 }
           # linux
-          - { goos: linux, goarch: 386, output: 386 }
+          # - { goos: linux, goarch: 386, output: 386 }
 
           - { goos: linux, goarch: s390x, output: s390x }
           - { goos: linux, goarch: riscv64, output: riscv64 }
@@ -66,28 +92,48 @@ jobs:
           - { goos: linux, goarch: loong64, abi: 1, output: loong64-abi1 }
           - { goos: linux, goarch: loong64, abi: 2, output: loong64-abi2 }
 
-          - { goos: linux, goarch: arm, goarm: 5, output: armv5 }
-          - { goos: linux, goarch: arm, goarm: 6, output: armv6 }
-          - { goos: linux, goarch: arm, goarm: 7, output: armv7 }
+          # - { goos: linux, goarch: arm, goarm: 5, output: armv5 }
+          # - { goos: linux, goarch: arm, goarm: 6, output: armv6 }
+          # - { goos: linux, goarch: arm, goarm: 7, output: armv7 }
 
           - { goos: linux, goarch: amd64, goamd64: v1, output: amd64 }
           - { goos: linux, goarch: amd64, goamd64: v3, output: amd64v3 }
 
-          - { goos: linux, goarch: mips, output: mips }
-          - { goos: linux, goarch: mips, gomips: softfloat, output: mips-softfloat }
-          - { goos: linux, goarch: mips, gomips: hardfloat, output: mips-hardfloat }
-          - { goos: linux, goarch: mipsle, output: mipsle }
+          # - { goos: linux, goarch: mips, output: mips }
+          # - {
+          #     goos: linux,
+          #     goarch: mips,
+          #     gomips: softfloat,
+          #     output: mips-softfloat,
+          #   }
+          # - {
+          #     goos: linux,
+          #     goarch: mips,
+          #     gomips: hardfloat,
+          #     output: mips-hardfloat,
+          #   }
+          # - { goos: linux, goarch: mipsle, output: mipsle }
 
-          - { goos: linux, goarch: mips64, output: mips64 }
-          - { goos: linux, goarch: mips64, gomips: softfloat, output: mips64-softfloat }
-          - { goos: linux, goarch: mips64, gomips: hardfloat, output: mips64-hardfloat }
-          - { goos: linux, goarch: mips64le, output: mips64le }
+          # - { goos: linux, goarch: mips64, output: mips64 }
+          # - {
+          #     goos: linux,
+          #     goarch: mips64,
+          #     gomips: softfloat,
+          #     output: mips64-softfloat,
+          #   }
+          # - {
+          #     goos: linux,
+          #     goarch: mips64,
+          #     gomips: hardfloat,
+          #     output: mips64-hardfloat,
+          #   }
+          # - { goos: linux, goarch: mips64le, output: mips64le }
           # windows
-          - { goos: windows, goarch: 386, output: 386 }
+          # - { goos: windows, goarch: 386, output: 386 }
 
           - { goos: windows, goarch: arm64, output: arm64 }
 
-          - { goos: windows, goarch: arm, goarm: 7, output: arm32v7 }
+          # - { goos: windows, goarch: arm, goarm: 7, output: arm32v7 }
 
           - { goos: windows, goarch: amd64, goamd64: v1, output: amd64 }
           - { goos: windows, goarch: amd64, goamd64: v3, output: amd64v3 }
@@ -116,7 +162,7 @@ jobs:
           wget -q https://github.com/MetaCubeX/loongarch64-golang/releases/download/1.22.4/go1.22.4.linux-amd64-abi${{ matrix.jobs.abi }}.tar.gz -O linux-amd64.tar.gz
           sudo tar zxf linux-amd64.tar.gz -C /usr/local
           echo "/usr/local/go/bin" >> $GITHUB_PATH
-          
+
       - name: setup go
         uses: actions/setup-go@v5.0.0
         if: ${{ matrix.jobs.goarch != 'loong64' }}
@@ -147,7 +193,7 @@ jobs:
         id: setup-ndk
         with:
           ndk-version: r27
-      
+
       - name: Setup CC ENV
         if: ${{ matrix.jobs.goos == 'android' }}
         run: echo "CC=${{ steps.setup-ndk.outputs.ndk-path }}/toolchains/llvm/prebuilt/linux-x86_64/bin/${{ matrix.jobs.ndk }}-clang" >> $GITHUB_ENV

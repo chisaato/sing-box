@@ -2,6 +2,8 @@ name: Build SFA
 
 on:
   push:
+  # 手工触发
+  workflow_dispatch: {}
 
 jobs:
   go:
