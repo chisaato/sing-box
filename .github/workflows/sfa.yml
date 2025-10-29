@@ -55,7 +55,8 @@ jobs:
       - name: setup go
         uses: actions/setup-go@v5.0.0
         with:
-          go-version: ${{needs.go.outputs.version}}
+          # go-version: ${{needs.go.outputs.version}}
+          go-version: 1.23.12
 
       - name: checkout app repository
         uses: actions/checkout@v4.1.1
@@ -74,7 +75,7 @@ jobs:
         uses: nttld/setup-ndk@v1
         id: setup-ndk
         with:
-          ndk-version: r27
+          ndk-version: r29
 
       - name: get latest build tools version
         id: sdk
