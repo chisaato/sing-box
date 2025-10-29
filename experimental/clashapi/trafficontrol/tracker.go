@@ -88,7 +88,7 @@ func (t TrackerMetadata) MarshalJSON() ([]byte, error) {
 			"sourcePort":      F.ToString(t.Metadata.Source.Port),
 			"destinationPort": F.ToString(t.Metadata.Destination.Port),
 			"host":            domain,
-			"sniffHosts":      t.Metadata.SniffHost,
+			"sniffHost":      t.Metadata.SniffHost,
 			"dnsMode":         dnsMode,
 			"processPath":     processPath,
 		},
